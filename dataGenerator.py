@@ -1,6 +1,5 @@
 import numpy as np
 import time
-import tensorflow as tf
 import pandas as pd
 import random
 from decimal import Decimal
@@ -16,36 +15,31 @@ def cartesian(arrays):
         arr[i, ...] = a
     return arr.reshape(la, -1).T
 
-def splitGenerator(*args):
-
-    """args는 튜플 (시작, 끝, 간격)으로 구성, 받은 모든 args를 해당하는 간격으로 잘라 self.data에 저장"""
-    
-    title = np.array([np.array(['Tox', 'muns', 'Vt', 'm', 'Vds', 'Vgs', 'answer'])])
-    case = [np.arange(*[x for x in i]) for i in args]
-    caselist = cartesian(case)
-    ans = np.array([np.array([equation(*x)]) for x in caselist])
-    data = np.random.permutation(np.concatenate((caselist, ans), axis=1))
-    data = np.concatenate((title, data), axis=0)
-    return data
-
 def randomGenerator(*args, cnt):
 
     """args는 튜플 (시작, 끝)으로 구성, 받은 모든 args안의 영역의 랜덤한 데이터를 cnt 횟수 만큼 채워 넣음"""
 
-    title = np.array([np.array(['Tox', 'muns', 'Vt', 'm', 'Vds', 'Vgs', 'answer'])])
+    datatitle = np.array([np.array(['Tox', 'muns', 'Vt', 'm'])])
+    temp = cartesian((np.arange(0, 5), np.arange(0, 5)))
+    anstitle = np.array([np.array([str(x) for x in temp])])
     case = [np.arange(*[x for x in i]) for i in args]
     tempcaselist = []
     for i in range(0, cnt):
-        print(np.array([x[random.randrange(0, len(case))] for x in case]))
-        tempcaselist.append(np.array([x[random.randrange(0, len(case))] for x in case]))
+        tempcaselist.append(np.array([x[random.randrange(0, len(x))] for x in case]))
     caselist = np.array(tempcaselist)
-    ans = np.array([np.array([equation(*x)]) for x in caselist])
-    data = np.random.permutation(np.concatenate((caselist, ans), axis=1))
-    data = np.concatenate((title, data), axis=0)
-    return data
+    
+    ans = []
+    for i in caselist:
+        ans.append(np.array([equation(*i, *x) for x in temp]))
+    ans = np.array(ans)
+    print(ans)
+    data = np.concatenate((datatitle, caselist), axis=0)
+    ans = np.concatenate((anstitle, ans), axis=0)
+    return data, ans
 
-def dataSave(data):
+def dataSave(data, ans):
     pd.DataFrame(data).to_csv("data.csv", index=False, header=False)
+    pd.DataFrame(ans).to_csv("ans.csv", header=False, index=False)
 
 def equation(Tox, muns, Vt, m, Vds, Vgs, W=Decimal('1e-6'), L=Decimal('1e-6'), Eox=Decimal('3.9')*Decimal('8.85e-12')):
     Coxe = Eox/Tox
@@ -66,6 +60,6 @@ midVt = Decimal('0.7')
 
 
 start = time.time()
-data = randomGenerator(*[(x*Decimal('0.7'), x*Decimal('1.3'), x*Decimal('0.6')/Decimal('100')) for x in [midTox, midmuns, midm, midVt]], (0, 50, 1), (0, 50, 1), cnt=30)
-dataSave(data)
+data, ans = randomGenerator(*[(x*Decimal('0.7'), x*Decimal('1.3'), x*Decimal('0.6')/Decimal('1000')) for x in [midTox, midmuns, midm, midVt]], cnt=100000)
+dataSave(data, ans)
 print(float(time.time() - start))

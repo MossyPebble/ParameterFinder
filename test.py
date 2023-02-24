@@ -9,8 +9,6 @@ from decimal import Decimal
 
 mlr = joblib.load('mlrmodel.pkl')
 
-
-
 def cartesian(arrays):
 
     """[[numpy 배열], [numpy 배열]...] 의 형태를 받아 배열 끼리의 데카르트 곱을 numpy 배열로 반환"""

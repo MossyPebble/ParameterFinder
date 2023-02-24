@@ -20,19 +20,17 @@ def get_dataset(file_path, **kwargs):
       **kwargs)
   return dataset
 
-f = pd.read_csv('data.csv')
-print(f.head())
+data = pd.read_csv('data.csv')
+ans = pd.read_csv('ans.csv')
 
-x = f[['Tox', 'muns', 'Vgs', 'Vt', 'm', 'Vds']]
-y = f[['answer']]
+x = ans
+y = data
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, train_size=0.8, test_size=0.2)
 
 mlr = LinearRegression()
 mlr.fit(x_train, y_train)
 joblib.dump(mlr, 'mlrmodel.pkl')
-
-# mlr = joblib.load('mlrmodel.pkl')
 
 y_predict = mlr.predict(x_test)
 
